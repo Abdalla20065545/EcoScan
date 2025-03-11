@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>مصنف النفايات لإعادة التدوير</title>
+    <style>
+        /* أنماط الواجهة */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            color: #333;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .container {
+            width: 90%;
+            max-width: 800px;
+            padding: 20px;
+            background-color: #fff;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+        }
+        header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        header h1 {
+            font-size: 1.5em;
+            color: #4CAF50;
+        }
+        .app-description {
+            font-size: 1em;
+            color: #666;
+        }
+        .main-content {
+            margin-top: 20px;
+        }
+        .card {
+            background-color: #fff;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+        .camera-container {
+            position: relative;
+            width: 100%;
+            height: 200px;
+            background-color: #eee;
+            border-radius: 8px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+        .placeholder-img {
+            text-align: center;
+            color: #666;
+        }
+        .placeholder-img i {
+            font-size: 2em;
+            margin-bottom: 10px;
+        }
+        .camera-frame {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 80%;
+            height: 80%;
+            border: 4px dashed #4CAF50;
+            border-radius: 8px;
+            pointer-events: none;
+        }
+        .buttons-container {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .btn {
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9em;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            flex: 1;
+            text-align: center;
+            justify-content: center;
+        }
+        .btn-primary {
+            background-color: #4CAF50;
+            color: #fff;
+        }
+        .btn-secondary {
+            background-color: #f44336;
+            color: #fff;
+        }
+        .alert {
+            padding: 10px;
+            border-radius: 5px;
+            margin-top: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.9em;
+        }
+        .alert-error {
+            background-color: #ffebee;
+            border: 1px solid #ffcdd2;
+            color: #c62828;
+        }
+        .loading {
+            text-align: center;
+            margin-top: 20px;
+        }
+        .loading-spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #4CAF50;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .results-section {
+            display: none;
+        }
+        .result-card {
+            background-color: #f9f9f9;
+            padding: 15px;
+            border-radius: 8px;
+        }
+        .result-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        .result-title h2 {
+            margin: 0;
+            color: #4CAF50;
+            font-size: 1.2em;
+        }
+        .material-info {
+            margin-bottom: 15px;
+        }
+        .tips-section ul {
+            list-style-type: disc;
+            padding-left: 20px;
+            font-size: 0.9em;
+        }
+        .model-info {
+            font-size: 0.8em;
+            color: #666;
+            margin-top: 15px;
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>مصنف النفايات لإعادة التدوير</h1>
+            <p class="app-description">التقط صورة للنفايات وتعرف ما إذا كانت قابلة لإعادة التدوير</p>
+        </header>
+        
+        <div class="main-content">
+            <div class="card input-section">
+                <h2>التقط صورة للنفايات</h2>
+                <div class="camera-container">
+                    <div class="placeholder-img" id="placeholder">
+                        <i class="fas fa-image"></i>
+                        <p>التقط صورة أو حملها من جهازك</p>
+                    </div>
+                    <video id="camera-feed" autoplay style="display: none; width: 100%; height: 100%; object-fit: cover;"></video>
+                    <div class="camera-frame" id="camera-frame"></div>
+                    <img id="preview-image" alt="صورة النفايات" style="display: none;">
+                </div>
+                
+                <div class="buttons-container">
+                    <input type="file" id="file-input" accept="image/*" style="display: none;">
+                    <button class="btn btn-primary" id="upload-btn">
+                        <i class="fas fa-upload"></i> تحميل صورة
+                    </button>
+                    <button class="btn btn-primary" id="camera-btn">
+                        <i class="fas fa-camera"></i> فتح الكاميرا
+                    </button>
+                    <button class="btn btn-primary" id="capture-btn" style="display: none;">
+                        <i class="fas fa-camera"></i> التقط صورة
+                    </button>
+                    <button class="btn btn-secondary" id="reset-btn" style="display: none;">
+                        <i class="fas fa-redo"></i> إعادة ضبط
+                    </button>
+                </div>
+                
+                <button class="btn btn-primary" id="analyze-btn" style="display: none;">
+                    <i class="fas fa-search"></i> تحليل النفايات
+                </button>
+                
+                <div class="alert alert-error not-waste-alert" id="not-waste-alert" style="display: none;">
+                    <i class="fas fa-exclamation-triangle alert-icon"></i>
+                    <div>
+                        <strong>تنبيه!</strong> الصورة لا تحتوي على نفايات. يرجى التقاط صورة للنفايات لتحليلها.
+                    </div>
+                </div>
+
+                <div class="alert alert-error" id="model-loading-alert" style="background-color: #FFF3E0; border-color: #FF9800; color: #E65100; display: none;">
+                    <i class="fas fa-exclamation-circle alert-icon"></i>
+                    <div>
+                        <strong>جاري تحميل النموذج...</strong> يرجى الانتظار قليلاً قبل تحليل الصورة.
+                    </div>
+                </div>
+
+                <div class="alert alert-error" id="camera-error-alert" style="display: none;">
+                    <i class="fas fa-exclamation-triangle alert-icon"></i>
+                    <div>
+                        <strong>تنبيه!</strong> لا يمكن الوصول للكاميرا. يرجى التأكد من منح الإذن لفتح الكاميرا.
+                    </div>
+                </div>
+            </div>
+            
+            <div class="loading" id="loading-section" style="display: none;">
+                <div class="loading-spinner"></div>
+                <p>جاري تحليل الصورة...</p>
+            </div>
+            
+            <div class="card results-section" id="results-section" style="display: none;">
+                <div class="result-card">
+                    <div class="result-title">
+                        <i class="fas fa-recycle"></i>
+                        <h2 id="result-heading">نتيجة التحليل</h2>
+                    </div>
+                    
+                    <div class="material-info">
+                        <p>المادة المحددة: <strong id="material-type">بلاستيك</strong></p>
+                        <p>حالة إعادة التدوير: <strong id="recyclability" class="recyclable">قابل لإعادة التدوير</strong></p>
+                    </div>
+                    
+                    <div class="prediction-results" id="prediction-results">
+                        <h3>التحليل التفصيلي:</h3>
+                        <div id="prediction-details"></div>
+                    </div>
+                    
+                    <div class="tips-section">
+                        <h3>نصائح للتعامل مع هذه المادة:</h3>
+                        <ul class="tips-list" id="tips-list">
+                            <!-- التوصيات ستُضاف هنا بواسطة JavaScript -->
+                        </ul>
+                    </div>
+                    
+                    <div class="model-info">
+                        <p>تم التحليل باستخدام نموذج تعلم آلي متخصص في تصنيف النفايات</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <footer>
+            <p>تطبيق مصنف النفايات لإعادة التدوير © 2025</p>
+            <p>ساهم في الحفاظ على البيئة من خلال إعادة التدوير الصحيح</p>
+        </footer>
+    </div>
+
+    <!-- استخدام TensorFlow.js -->
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/mobilenet@latest"></script>
+
+    <script>
+        const fileInput = document.getElementById('file-input');
+        const uploadBtn = document.getElementById('upload-btn');
+        const cameraBtn = document.getElementById('camera-btn');
+        const captureBtn = document.getElementById('capture-btn');
+        const resetBtn = document.getElementById('reset-btn');
+        const analyzeBtn = document.getElementById('analyze-btn');
+        const previewImage = document.getElementById('preview-image');
+        const placeholder = document.getElementById('placeholder');
+        const resultsSection = document.getElementById('results-section');
+        const loadingSection = document.getElementById('loading-section');
+        const notWasteAlert = document.getElementById('not-waste-alert');
+        const modelLoadingAlert = document.getElementById('model-loading-alert');
+        const cameraErrorAlert = document.getElementById('camera-error-alert');
+        const cameraFeed = document.getElementById('camera-feed');
+        const cameraFrame = document.getElementById('camera-frame');
+        
+        let model = null;
+        let isModelLoading = true;
+        let hasCamera = false;
+        let isAnalyzing = false;
+        
+        // قائمة بالكلمات المفتاحية للنفايات
+        const wasteKeywords = [
+            'plastic', 'bottle', 'paper', 'cardboard', 'glass', 'can', 'tin', 'metal',
+            'waste', 'trash', 'garbage', 'recycle', 'packaging', 'container', 'wrapper',
+            'carton', 'aluminum', 'steel', 'foam', 'polystyrene', 'nylon', 'bag', 'electronic',
+            'battery', 'food waste', 'organic', 'box', 'cup', 'plate', 'utensil', 'straw',
+            'canister', 'beverage can', 'soda can', 'metal can', 'glass bottle', 'cardboard box',
+            'transistor', 'capacitor', 'battery', 'circuit', 'wire', 'cable', 'electronics',
+            'organic waste', 'compost', 'vegetable', 'fruit', 'leftover', 'biodegradable', 'kitchen waste',
+            'medical waste', 'syringe', 'needle', 'bandage', 'mask', 'glove', 'first aid',
+            'textile', 'cloth', 'fabric', 'clothing', 'garment', 'shirt', 'pants', 'cotton', 'wool', 'polyester',
+            'ceramic', 'porcelain', 'tile', 'pottery', 'clay',
+            'rubber', 'tire', 'latex', 'eraser', 'rubber band',
+            'wood', 'timber', 'plywood', 'furniture', 'lumber',
+            'hazardous waste', 'chemical', 'paint', 'solvent', 'pesticide', 'herbicide',
+            'construction waste', 'concrete', 'brick', 'stone', 'gravel', 'sand',
+            'mixed waste', 'general waste', 'household waste', 'industrial waste'
+        ];
+        
+        // معلومات المواد وقابلية إعادة التدوير
+        const materials = [
+            {
+                name: 'بلاستيك',
+                keywords: ['plastic', 'bottle', 'container', 'polymer', 'packaging', 'wrapper', 'bag', 'polystyrene', 'nylon'],
+                recyclable: true,
+                tips: [
+                    'اغسل العبوات البلاستيكية قبل إعادة تدويرها',
+                    'أزل الملصقات قدر الإمكان',
+                    'افصل الأغطية عن العبوات البلاستيكية',
+                    'تحقق من رمز إعادة التدوير على العبوة لمعرفة نوع البلاستيك',
+                    'اضغط العبوات لتوفير مساحة عند التخزين'
+                ]
+            },
+            {
+                name: 'ورق',
+                keywords: ['paper', 'cardboard', 'newspaper', 'magazine', 'book', 'carton', 'box', 'document', 'mail', 'card', 'cardboard box'],
+                recyclable: true,
+                tips: [
+                    'افصل الورق الملون عن الأبيض للحصول على أفضل نتائج',
+                    'قم بإزالة أي دبابيس أو مشابك معدنية من الورق',
+                    'لا تعيد تدوير الورق الملوث بالطعام أو الزيت',
+                    'اطوِ الكرتون لتوفير المساحة',
+                    'احتفظ بالورق جافًا لضمان جودة إعادة التدوير'
+                ]
+            },
+            {
+                name: 'زجاج',
+                keywords: ['glass', 'bottle', 'jar', 'cup', 'window', 'mirror', 'container', 'glass bottle'],
+                recyclable: true,
+                tips: [
+                    'اغسل العبوات الزجاجية قبل إعادة تدويرها',
+                    'أزل الأغطية المعدنية والبلاستيكية',
+                    'افصل الزجاج حسب اللون إذا كان ذلك متاحًا',
+                    'لا تضع الزجاج المكسور في حاويات إعادة التدوير العادية',
+                    'تأكد من عدم وجود بقايا الطعام في العبوات الزجاجية'
+                ]
+            },
+            {
+                name: 'معدن',
+                keywords: ['metal', 'can', 'tin', 'aluminum', 'steel', 'iron', 'copper', 'foil', 'wire', 'canister', 'beverage can', 'soda can', 'metal can'],
+                recyclable: true,
+                tips: [
+                    'اغسل العلب المعدنية قبل إعادة تدويرها',
+                    'اضغط العلب لتوفير المساحة',
+                    'يمكن استخدام مغناطيس لفصل المعادن المغناطيسية عن غير المغناطيسية',
+                    'معظم المعادن قابلة لإعادة التدوير بنسبة 100%',
+                    'لا تضع علب الطلاء أو المواد الكيميائية مع نفايات إعادة التدوير العادية'
+                ]
+            },
+            {
+                name: 'نفايات إلكترونية',
+                keywords: ['electronic', 'device', 'computer', 'laptop', 'phone', 'television', 'tv', 'monitor', 'circuit', 'cable', 'battery', 'keyboard', 'mouse', 'transistor', 'capacitor'],
+                recyclable: true,
+                tips: [
+                    'لا تضع النفايات الإلكترونية في حاويات القمامة العادية',
+                    'ابحث عن مراكز إعادة تدوير مخصصة للإلكترونيات',
+                    'امسح البيانات الشخصية قبل التخلص من الأجهزة',
+                    'بعض متاجر الإلكترونيات تقبل الأجهزة القديمة لإعادة تدويرها',
+                    'تحتوي الأجهزة الإلكترونية على معادن ثمينة يمكن استعادتها'
+                ]
+            },
+            {
+                name: 'نفايات عضوية',
+                keywords: ['organic', 'food waste', 'vegetable', 'fruit', 'leftover', 'compost', 'biodegradable', 'kitchen waste'],
+                recyclable: true,
+                tips: [
+                    'استخدم بقايا الطعام في صنع السماد العضوي',
+                    'افصل بقايا الطعام عن النفايات الأخرى',
+                    'لا تضع اللحوم أو منتجات الألبان في سلة السماد المنزلية',
+                    'يمكن تحويل بقايا الطعام إلى طاقة في بعض المناطق',
+                    'قلل من هدر الطعام عن طريق شراء ما تحتاجه فقط'
+                ]
+            },
+            {
+                name: 'نفايات طبية',
+                keywords: ['medical', 'medicine', 'syringe', 'needle', 'bandage', 'mask', 'glove', 'first aid'],
+                recyclable: false,
+                tips: [
+                    'لا تضع المخلفات الطبية في حاويات إعادة التدوير العادية',
+                    'استخدم حاويات خاصة للأدوات الحادة مثل الإبر',
+                    'تواصل مع المستشفيات أو الصيدليات لمعرفة طرق التخلص الآمن',
+                    'بعض الأدوية يمكن إرجاعها للصيدليات للتخلص منها بشكل صحيح',
+                    'افصل المخلفات الطبية عن النفايات العادية'
+                ]
+            },
+            {
+                name: 'نفايات قماشية',
+                keywords: ['textile', 'cloth', 'fabric', 'clothing', 'garment', 'shirt', 'pants', 'cotton', 'wool', 'polyester'],
+                recyclable: true,
+                tips: [
+                    'تبرع بالملابس الصالحة للاستخدام للجمعيات الخيرية',
+                    'استخدم الملابس القديمة كخرق للتنظيف',
+                    'ابحث عن برامج إعادة تدوير النسيج في منطقتك',
+                    'استخدم الملابس غير الصالحة للاستخدام في مشاريع يدوية',
+                    'ابتعد عن شراء الملابس التي تستخدم لمرة واحدة'
+                ]
+            },
+            {
+                name: 'نفايات خطرة',
+                keywords: ['hazardous', 'chemical', 'paint', 'solvent', 'pesticide', 'herbicide'],
+                recyclable: false,
+                tips: [
+                    'لا تضع النفايات الخطرة في حاويات القمامة العادية',
+                    'ابحث عن مراكز التخلص الآمن من النفايات الخطرة',
+                    'تأكد من تخزين النفايات الخطرة في حاويات مغلقة بإحكام',
+                    'لا تخلط النفايات الخطرة مع النفايات العادية',
+                    'اتبع الإرشادات المحلية للتخلص من النفايات الخطرة'
+                ]
+            },
+            {
+                name: 'نفايات بناء',
+                keywords: ['construction', 'concrete', 'brick', 'stone', 'gravel', 'sand'],
+                recyclable: true,
+                tips: [
+                    'افصل المواد القابلة لإعادة التدوير مثل الخرسانة والطوب',
+                    'استخدم الحطام النظيف في مشاريع البناء الجديدة',
+                    'تأكد من التخلص الصحيح من المواد الخطرة مثل الأسمنت الجاف',
+                    'ابحث عن مراكز إعادة تدوير نفايات البناء في منطقتك',
+                    'قلل من هدر مواد البناء عن طريق التخطيط الجيد'
+                ]
+            },
+            {
+                name: 'خشب',
+                keywords: ['wood', 'timber', 'plywood', 'furniture', 'lumber'],
+                recyclable: true,
+                tips: [
+                    'يمكن إعادة استخدام الخشب في مشاريع يدوية',
+                    'ابحث عن مراكز إعادة تدوير الخشب في منطقتك',
+                    'لا تضع الخشب الملوث بالطلاء أو المواد الكيميائية مع النفايات العادية',
+                    'استخدم الخشب القديم في صنع السماد العضوي',
+                    'قلل من هدر الخشب عن طريق التخطيط الجيد'
+                ]
+            },
+            {
+                name: 'مطاط',
+                keywords: ['rubber', 'tire', 'latex', 'eraser', 'rubber band'],
+                recyclable: true,
+                tips: [
+                    'ابحث عن مراكز إعادة تدوير المطاط في منطقتك',
+                    'يمكن إعادة استخدام الإطارات القديمة في مشاريع يدوية',
+                    'لا تضع المطاط الملوث بالمواد الكيميائية مع النفايات العادية',
+                    'استخدم المطاط القديم في صنع السماد العضوي',
+                    'قلل من هدر المطاط عن طريق التخطيط الجيد'
+                ]
+            }
+        ];
+        
+        // تحميل النموذج
+        async function loadModel() {
+            try {
+                modelLoadingAlert.style.display = 'flex';
+                console.log("جاري تحميل النموذج...");
+                model = await mobilenet.load();
+                console.log("تم تحميل النموذج بنجاح!");
+                isModelLoading = false;
+                modelLoadingAlert.style.display = 'none';
+            } catch (err) {
+                console.error("خطأ في تحميل النموذج:", err);
+                modelLoadingAlert.innerHTML = `
+                    <i class="fas fa-exclamation-triangle alert-icon"></i>
+                    <div>
+                        <strong>خطأ في تحميل النموذج!</strong> يرجى تحديث الصفحة والمحاولة مرة أخرى.
+                    </div>
+                `;
+                modelLoadingAlert.style.display = 'flex';
+            }
+        }
+        
+        // تهيئة الكاميرا
+        async function initCamera() {
+            try {
+                const constraints = { video: true };
+                const stream = await navigator.mediaDevices.getUserMedia(constraints);
+                cameraFeed.srcObject = stream;
+                hasCamera = true;
+                cameraFeed.style.display = 'block';
+                placeholder.style.display = 'none';
+                cameraFrame.style.display = 'block';
+                captureBtn.style.display = 'inline-block';
+                cameraErrorAlert.style.display = 'none';
+            } catch (err) {
+                console.log("لا يمكن الوصول للكاميرا:", err);
+                hasCamera = false;
+                cameraBtn.disabled = true;
+                cameraBtn.title = "الكاميرا غير متوفرة";
+                cameraBtn.style.opacity = "0.6";
+                cameraErrorAlert.style.display = 'flex';
+                
+                // إظهار رسالة تفيد بضرورة منح الإذن
+                alert("يرجى منح الإذن للوصول إلى الكاميرا في إعدادات المتصفح.");
+            }
+        }
+        
+        // التقاط صورة من الكاميرا
+        function captureImage() {
+            const canvas = document.createElement('canvas');
+            canvas.width = cameraFeed.videoWidth;
+            canvas.height = cameraFeed.videoHeight;
+            const context = canvas.getContext('2d');
+            context.drawImage(cameraFeed, 0, 0, canvas.width, canvas.height);
+            previewImage.src = canvas.toDataURL('image/png');
+            previewImage.style.display = 'block';
+            placeholder.style.display = 'none';
+            cameraFeed.style.display = 'none';
+            resetBtn.style.display = 'inline-block';
+            analyzeBtn.style.display = 'inline-block';
+        }
+        
+        // تحميل صورة من الجهاز
+        function loadImage(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    previewImage.src = e.target.result;
+                    previewImage.style.display = 'block';
+                    placeholder.style.display = 'none';
+                    cameraFeed.style.display = 'none';
+                    cameraFrame.style.display = 'none';
+                    resetBtn.style.display = 'inline-block';
+                    analyzeBtn.style.display = 'inline-block';
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+        
+        // إعادة ضبط الصورة
+        function resetImage() {
+            previewImage.src = '';
+            previewImage.style.display = 'none';
+            placeholder.style.display = 'flex';
+            cameraFeed.style.display = 'block';
+            cameraFrame.style.display = 'block';
+            resetBtn.style.display = 'none';
+            resultsSection.style.display = 'none';
+            notWasteAlert.style.display = 'none';
+            isAnalyzing = false;
+        }
+        
+        // تحليل الصورة
+        async function analyzeImage() {
+            if (!model) {
+                alert("النموذج غير محمل. يرجى الانتظار...");
+                return;
+            }
+            
+            if (!previewImage.src) {
+                alert("يرجى تحميل صورة أولاً.");
+                return;
+            }
+            
+            loadingSection.style.display = 'block';
+            resultsSection.style.display = 'none';
+            notWasteAlert.style.display = 'none';
+            
+            const img = new Image();
+            img.src = previewImage.src;
+            img.onload = async () => {
+                try {
+                    // ضبط حجم الصورة لتناسب النموذج
+                    const canvas = document.createElement('canvas');
+                    canvas.width = 224; // حجم الصورة المطلوب للنموذج
+                    canvas.height = 224;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, 224, 224);
+                    
+                    const predictions = await model.classify(canvas);
+                    console.log("التوقعات:", predictions);
+                    
+                    // التحقق مما إذا كانت الصورة تحتوي على نفايات
+                    const isWaste = predictions.some(prediction => 
+                        wasteKeywords.some(keyword => prediction.className.toLowerCase().includes(keyword))
+                    );
+                    
+                    if (!isWaste) {
+                        notWasteAlert.style.display = 'flex';
+                        loadingSection.style.display = 'none';
+                        return;
+                    }
+                    
+                    // تحديد نوع المادة
+                    const material = determineMaterial(predictions);
+                    if (material) {
+                        displayResults(material);
+                    } else {
+                        document.getElementById('material-type').textContent = 'غير معروف';
+                        document.getElementById('recyclability').textContent = 'غير قابل لإعادة التدوير';
+                        document.getElementById('recyclability').className = 'non-recyclable';
+                        document.getElementById('tips-list').innerHTML = '<li>لا توجد نصائح متاحة لهذه المادة.</li>';
+                    }
+                    
+                    loadingSection.style.display = 'none';
+                    resultsSection.style.display = 'block';
+                } catch (error) {
+                    console.error("خطأ في تحليل الصورة:", error);
+                    alert("حدث خطأ أثناء تحليل الصورة. يرجى المحاولة مرة أخرى.");
+                    loadingSection.style.display = 'none';
+                }
+            };
+        }
+        
+        // تحديد نوع المادة
+        function determineMaterial(predictions) {
+            for (const prediction of predictions) {
+                for (const material of materials) {
+                    if (material.keywords.some(keyword => prediction.className.toLowerCase().includes(keyword))) {
+                        return material;
+                    }
+                }
+            }
+            return null;
+        }
+        
+        // عرض النتائج
+        function displayResults(material) {
+            document.getElementById('material-type').textContent = material.name;
+            document.getElementById('recyclability').textContent = material.recyclable ? 'قابل لإعادة التدوير' : 'غير قابل لإعادة التدوير';
+            document.getElementById('recyclability').className = material.recyclable ? 'recyclable' : 'non-recyclable';
+            
+            const tipsList = document.getElementById('tips-list');
+            tipsList.innerHTML = material.tips.map(tip => `<li>${tip}</li>`).join('');
+        }
+        
+        // تهيئة الأحداث
+        document.addEventListener('DOMContentLoaded', () => {
+            loadModel();
+            
+            cameraBtn.addEventListener('click', initCamera);
+            uploadBtn.addEventListener('click', () => fileInput.click());
+            fileInput.addEventListener('change', loadImage);
+            captureBtn.addEventListener('click', captureImage);
+            resetBtn.addEventListener('click', resetImage);
+            analyzeBtn.addEventListener('click', analyzeImage);
+        });
+    </script>
+</body>
+</html>
